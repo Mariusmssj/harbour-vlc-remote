@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+Name=VLC Remote
+Icon=harbour-vlc_remote
+Exec=harbour-vlc_remote
+
