@@ -33,8 +33,6 @@ import Sailfish.Silica 1.0
 import "db.js" as DB
 import QtQuick.XmlListModel 2.0
 
-
-
 Page {
     id: page
 
@@ -50,15 +48,28 @@ Page {
     property string password : ""
     property string command: ""
     property string aspectRatio: "default"
+    property string seekTotal: "0:00:00"
 
     property int time: 0
     property int seekH : 0
     property int seekM : 0
     property int seekS : 0
+    property int time2: 0
+    property int seekH2 : 0
+    property int seekM2 : 0
+    property int seekS2 : 0
+
+    property int audioIndex: 1
+    property int subtitleIndex: 0
+
     property int syncTime : 1000
     property real delayAudio: 0.0
     property real delaySubtl: 0.0
     property double playbackRate: 0.0
+
+    property var audioTracks : []
+    property var subtitleTracks : []
+
 
 
     XmlListModel{
@@ -77,10 +88,17 @@ Page {
         XmlRole{ name: "loop"; query: "loop/string()"}
         XmlRole{ name: "repeat"; query: "repeat/string()"}
         XmlRole{ name: "subtitledelay"; query: "subtitledelay/string()"}
-
         XmlRole{ name: "artist"; query: "information/category/info[@name='artist']/string()"}
         XmlRole{ name: "album"; query: "information/category/info[@name='album']/string()"}
         XmlRole{ name: "filename"; query: "information/category/info[@name='filename']/string()"}
+    }
+
+    XmlListModel{
+        id: xmlModel2
+        query: "/root/information/category"
+
+        XmlRole{ name: "category"; query: "@name/string()"}
+        XmlRole{ name: "type"; query: "info[@name='Type']/string()"}
     }
 
     function sendCommand(command)
@@ -103,6 +121,28 @@ Page {
 
     function updateXML()
     {
+        if (xmlModel2.status === XmlListModel.Ready)
+        {
+            var tempAudioTracks = []
+            var tempSubtitleTracks = []
+
+            for(var i = 1; i < xmlModel2.count; i++)
+            {
+                if(xmlModel2.get(i).type === "Audio")
+                {
+                    tempAudioTracks.push(xmlModel2.get(i).category.slice(-1))
+                }
+                else if(xmlModel2.get(i).type === "Subtitle")
+                {
+                    tempSubtitleTracks.push(xmlModel2.get(i).category.slice(-1))
+                }
+            }
+
+        }
+        audioTracks = tempAudioTracks.sort();
+        subtitleTracks = tempSubtitleTracks.sort();
+        subtitleTracks.push(-1)
+
         if (xmlModel.status === XmlListModel.Ready)
         {
             var index =  0;
@@ -139,8 +179,10 @@ Page {
                 iconButtons.playing = true;
 
             labelFileName.text = element.filename
+            setTitle(element.filename)
             labelAlbum.text = element.album
             labelArtist.text = element.artist
+            setArtist(element.artist)
 
             delayAudio = element.audiodelay
             delaySubtl = element.subtitledelay
@@ -149,6 +191,7 @@ Page {
             checkAspect(element.aspectratio)
 
             slVol.value = element.volume;
+            seekTotal = getTotalSeek(element.length)
 
             if(element.currentplid !== -1)
             {
@@ -173,6 +216,7 @@ Page {
             }
         }
     }
+
     function checkPlaybackRate(rate)
     {
         if(playbackRate > 0.2 && playbackRate < 5.0)
@@ -217,24 +261,28 @@ Page {
             cmbAspect.currentIndex = 5
             break
         }
+    }
 
+    function getTotalSeek(seconds)
+    {
+        time2 = seconds;
+        seekH2 = (time2 / 3600) % 24;
+        seekM2 = (time2 / 60) % 60;
+        seekS2 = time2 % 60;
+        var stringTime = seekH2 + ":" + ("0" + seekM2).slice(-2) + ":" + ("0" + seekS2).slice(-2);
+        return(stringTime);
     }
 
     function updateSeek(seconds)
     {
         time = seconds;
-        seekH = time / 3600;
-        time = time%3600;
-        seekM = time / 60;
-        if(seekM >= 30)
-            seekH = seekH - 1;
-        time = time%60;
-        seekS = time;
-        if(seekS >= 30)
-            seekM = seekM - 1;
+        seekH = (time / 3600) % 24;
+        seekM = (time / 60) % 60;
+        seekS = time % 60;
         sliderSeek.value = seconds;
-        var stringTime =  seekH + "h " + seekM + "m " + seekS + "s";
+        var stringTime = seekH + ":" + ("0" + seekM).slice(-2) + ":" + ("0" + seekS).slice(-2) + " / " + seekTotal;
         sliderSeek.valueText = stringTime;
+        setSeek(stringTime);
     }
 
     function getVLCstatus()
@@ -252,6 +300,7 @@ Page {
         {
             if(httpReq.readyState === 4 && httpReq.status == 200)
             {
+                xmlModel2.xml = httpReq.responseText;
                 xmlModel.xml = httpReq.responseText;
                 xmlWaitTimer.start();
             }
@@ -279,6 +328,7 @@ Page {
             syncTime = 10000
             break
         }
+        setSync(syncTime)
     }
 
     function updateSettings()
@@ -397,7 +447,7 @@ Page {
 
                 Timer {
                     id: upTimer
-                    interval: syncTime; running: applicationActive; repeat: true
+                    interval: syncTime; running: true; repeat: true
                     onTriggered: getVLCstatus()
                 }
 
@@ -443,6 +493,7 @@ Page {
                             horizontalAlignment: Text.AlignLeft
                             truncationMode: TruncationMode.Elide
                             color: Theme.secondaryHighlightColor
+                            wrapMode: Text.WordWrap
                         }
                     }
                     Row{
@@ -527,6 +578,7 @@ Page {
                                     onClicked: {
                                         sendCommand("pl_play")
                                         iconButtons.playing = true
+                                        popBanner.notify("testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest")
                                     }
                                     enabled: !iconButtons.playing
                                 }
@@ -593,6 +645,7 @@ Page {
                     }
                 }
                 Row {
+                    anchors.horizontalCenter: parent.horizontalCenter
                     Slider {
                         id: sliderSeek
                         width: page.width
@@ -608,10 +661,9 @@ Page {
                         }
                     }
                 }
-
-
             }
         }
+
         Rectangle {
             id: rect2
             width: view.width
@@ -769,6 +821,49 @@ Page {
                             IconButton{
                                 icon.source: "image://theme/icon-m-add"
                                 onClicked: checkSubtitleDelay(0.1)
+                            }
+                        }
+                    }
+                }
+                SectionHeader { text: "Audio & Subtitle tracks" }
+                Row{
+                    Column
+                    {
+                        width: rect2.width/2
+
+                        Row
+                        {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            Button{
+                                text: "Change audio"
+                                onClicked: {
+                                    if(audioIndex < audioTracks.length)
+                                    {
+                                        passCommands("audio_track&val=" + audioTracks[audioIndex++])
+                                        if(audioIndex >= audioTracks.length)
+                                            audioIndex = 0
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Column
+                    {
+                        width: rect2.width/2
+
+                        Row
+                        {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            Button{
+                                text: "Change subtitle"
+                                onClicked: {
+                                    if(subtitleIndex < subtitleTracks.length)
+                                    {
+                                        passCommands("subtitle_track&val=" + subtitleTracks[subtitleIndex++])
+                                        if(subtitleIndex >= subtitleTracks.length)
+                                            subtitleIndex = 0
+                                    }
+                                }
                             }
                         }
                     }

@@ -116,7 +116,11 @@ Page {
                         text: "Home"
                         y: -15
                         width: parent.width / 3
-                        onClicked: updateSettings()
+                        onClicked: {
+                            //passCommands("addsubtitle&val=file:\\\E:\\Downloads\Movies\300.str")
+                            updateSettings()
+                        }
+
                     }
                     Button{
                         text: "Set as Home"

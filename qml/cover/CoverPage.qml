@@ -36,32 +36,82 @@ CoverBackground {
 
     Image{
 
-        source: "VLC-remote150px.png"
+        source: "vlc_cover.png"
         anchors.top: parent.top
-        anchors.topMargin: 15
+        anchors.topMargin: 20
         anchors.horizontalCenter: parent.horizontalCenter
-        opacity: 0.5
+        scale: 1.14
     }
 
     Label {
+        id: lblArtist
+        anchors.top: parent.top
+        anchors.topMargin: Theme.paddingLarge * 7
+        anchors.left: parent.left
+        anchors.leftMargin: 6
+        truncationMode: TruncationMode.Fade
+        color: Theme.highlightColor
+        elide: Text.ElideRight
+        wrapMode: Text.Wrap
+        text: (getSync() !== 0) ? getArtist() : " "
+    }
+    Label {
+        id: lblTitle
+        anchors.top: lblArtist.bottom
+        anchors.left: parent.left
+        anchors.leftMargin: 6
+        anchors.margins: Theme.paddingSmall
+        truncationMode: TruncationMode.Fade
+        color: Theme.highlightColor
+        elide: Text.ElideRight
+        wrapMode: Text.Wrap
+        text: (getSync() !== 0) ? getTitle() : " "
+    }
 
-        id: label
-        anchors.centerIn: parent
-        text: "VLC Remote"
+    Label {
+        id: lblSeek
+        anchors.top: lblTitle.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        truncationMode: TruncationMode.Fade
+        color: Theme.highlightColor
+        elide: Text.ElideRight
+        wrapMode: Text.Wrap
+        text: (getSync() !== 0) ? getSeek() : " "
+    }
+
+    Timer {
+        id: upTimer
+        interval: getSync(); running: true; repeat: true
+        onTriggered: {
+            lblTitle.text = getTitle();
+            lblSeek.text = getSeek();
+        }
     }
 
     CoverActionList {
         id: coverAction
 
         CoverAction {
+            id: caNext
             iconSource: "image://theme/icon-cover-next"
-            onTriggered: passCommands("pl_next")
+            onTriggered: {
+                passCommands("pl_next");
+                //callUpdate();
+                //lblTitle.text = getTitle();
+                //lblSeek.text = getSeek();
+            }
         }
 
         CoverAction {
             iconSource: "play-pause.png"
-            onTriggered: passCommands("pl_pause")
+            onTriggered: {
+                passCommands("pl_pause");
+                //callUpdate();
+                //lblTitle.text = getTitle();
+                //lblSeek.text = getSeek();
+            }
         }
     }
+
 }
 

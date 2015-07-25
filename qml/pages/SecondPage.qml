@@ -205,6 +205,15 @@ Dialog {
                 }
             }
 
+            /*TextSwitch {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: 'Update cover'
+                //description: "Updates cover with information"
+                //automaticCheck: false
+                //checked: backStepping
+                //onClicked: backStepping = !root.backStepping
+            }*/
+
             TextField {
                 id: tfIP
                 width: page.width

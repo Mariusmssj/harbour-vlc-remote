@@ -42,6 +42,10 @@ ApplicationWindow
     property string port : ""
     property string username : ""
     property string password : ""
+    property string title : ""
+    property string seek : ""
+    property string artist : ""
+    property int sync : 1000
 
     function passCommands(command)
     {
@@ -62,6 +66,50 @@ ApplicationWindow
         username = pUsername;
         password = pPassword;
     }
+
+    function setTitle(sTitle)
+    {
+        title = sTitle;
+    }
+    function setSeek(inSeek)
+    {
+        seek = inSeek;
+    }
+    function setSync(inSycn)
+    {
+        sync = inSycn;
+    }
+    function setArtist(inArtist)
+    {
+        artist = inArtist;
+    }
+
+    function getTitle()
+    {
+        return title;
+    }
+    function getSeek()
+    {
+        return seek;
+    }
+    function getSync()
+    {
+        return sync;
+    }
+    function getArtist()
+    {
+        return artist;
+    }
+
+    /*Loader
+    {
+        id: myLoader
+        source: "pages/FirstPage.qml"
+    }
+    function callUpdate()
+    {
+        myLoader.item.getVLCstatus();
+    }*/
 }
 
 
