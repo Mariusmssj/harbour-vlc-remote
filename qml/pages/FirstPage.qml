@@ -70,8 +70,6 @@ Page {
     property var audioTracks : []
     property var subtitleTracks : []
 
-
-
     XmlListModel{
         id: xmlModel
         query: "/root"
@@ -121,11 +119,11 @@ Page {
 
     function updateXML()
     {
+        var tempAudioTracks = []
+        var tempSubtitleTracks = []
+
         if (xmlModel2.status === XmlListModel.Ready)
         {
-            var tempAudioTracks = []
-            var tempSubtitleTracks = []
-
             for(var i = 1; i < xmlModel2.count; i++)
             {
                 if(xmlModel2.get(i).type === "Audio")
@@ -137,8 +135,8 @@ Page {
                     tempSubtitleTracks.push(xmlModel2.get(i).category.slice(-1))
                 }
             }
-
         }
+
         audioTracks = tempAudioTracks.sort();
         subtitleTracks = tempSubtitleTracks.sort();
         subtitleTracks.push(-1)
@@ -416,6 +414,10 @@ Page {
             // PullDownMenu and PushUpMenu must be declared in SilicaFlickable, SilicaListView or SilicaGridView
             PullDownMenu {
                 z: 1000
+                MenuItem{
+                    text: "About"
+                    onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
+                }
                 MenuItem{
                     text: "VLC Setup Help"
                     onClicked: pageStack.push(Qt.resolvedUrl("VlcHelp.qml"))

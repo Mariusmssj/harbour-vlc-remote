@@ -24,5 +24,6 @@ OTHER_FILES += qml/harbour-vlc_remote.qml \
     qml/pages/db.js \
     qml/pages/fileCheck.js \
     qml/pages/VlcPlaylist.qml \
-    qml/pages/db2.js
+    qml/pages/db2.js \
+    qml/pages/AboutPage.qml
 

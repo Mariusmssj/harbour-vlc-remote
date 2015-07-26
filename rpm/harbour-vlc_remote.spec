@@ -13,7 +13,7 @@ Name:       harbour-vlc_remote
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    This VLC remote allows user to control basic features of the VLC player using your mobile phone
-Version:    1.3
+Version:    1.3.2
 Release:    0
 Group:      Qt/Qt
 License:    LICENSE
