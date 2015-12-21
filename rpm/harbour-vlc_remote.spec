@@ -22,10 +22,12 @@ Source0:    %{name}-%{version}.tar.bz2
 Source100:  harbour-vlc_remote.yaml
 Requires:   qt5-qtdeclarative-import-xmllistmodel
 Requires:   sailfishsilica-qt5 >= 0.10.9
+Requires:   mpris-qt5
 BuildRequires:  pkgconfig(sailfishapp) >= 0.0.10
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
+BuildRequires:  pkgconfig(mpris-qt5)
 BuildRequires:  desktop-file-utils
 
 %description

@@ -32,6 +32,7 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import "db.js" as DB
 import QtQuick.XmlListModel 2.0
+import org.nemomobile.mpris 1.0
 
 Page {
     id: page
@@ -40,6 +41,49 @@ Page {
         if (status === PageStatus.Active) {
             pageStack.pushAttached("VlcFileBrowser.qml", {});
         }
+    }
+
+    function scaleVolumeToPercent(value) {
+        return (0 + (value-0)*(200-0)/(512-0));
+    }
+
+    function setVolume(volume) {
+        sendCommand("volume&val=" + volume)
+    }
+
+    function pause() {
+        sendCommand("pl_pause")
+        iconButtons.playing = false
+    }
+
+    function play() {
+        sendCommand("pl_play")
+        iconButtons.playing = true
+    }
+
+    function next() {
+        sendCommand("pl_next")
+    }
+
+    function prev() {
+        sendCommand("pl_previous")
+    }
+
+    function stop() {
+        sendCommand("pl_stop")
+    }
+
+    function seekRelative(amount) {
+        if (amount > 0) {
+            sendCommand("seek&val=%2B" + amount)
+        } else {
+            // amount already has the - sign
+            sendCommand("seek&val=" + amount)
+        }
+    }
+
+    function seekAbsolute(at) {
+        sendCommand("seek&val=" + amount)
     }
 
     property string ip : ""
@@ -543,8 +587,8 @@ Page {
                             minimumValue: 0
                             maximumValue: 512
                             value: 100
-                            valueText: "Volume: " + (0 + (value-0)*(200-0)/(512-0)).toFixed(0)
-                            onValueChanged: sendCommand("volume&val=" + value.toFixed(0))
+                            valueText: "Volume: " + scaleVolumeToPercent(value).toFixed(0)
+                            onValueChanged: page.setVolume(value.toFixed(0))
                         }
                     }
                     Row{
@@ -561,33 +605,26 @@ Page {
                                 IconButton{
                                     id: btnPrev
                                     icon.source: "image://theme/icon-m-previous"
-                                    onClicked: sendCommand("pl_previous")
+                                    onClicked: page.prev()
                                 }
 
                                 IconButton {
                                     id: pause
                                     icon.source: "image://theme/icon-l-pause"
-                                    onClicked: {
-                                        sendCommand("pl_pause")
-                                        iconButtons.playing = false
-                                    }
+                                    onClicked: page.pause()
                                     enabled: iconButtons.playing
                                 }
 
                                 IconButton {
                                     id: play
                                     icon.source: "image://theme/icon-l-play"
-                                    onClicked: {
-                                        sendCommand("pl_play")
-                                        iconButtons.playing = true
-                                        popBanner.notify("testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest")
-                                    }
+                                    onClicked: page.play()
                                     enabled: !iconButtons.playing
                                 }
                                 IconButton{
                                     id: btnNext
                                     icon.source: "image://theme/icon-m-next"
-                                    onClicked: sendCommand("pl_next")
+                                    onClicked: page.next()
                                 }
                             }
 
@@ -598,20 +635,20 @@ Page {
                                 IconButton{
                                     id: btnRwn
                                     icon.source: "icon-m-previous-song.png"
-                                    onClicked: sendCommand("seek&val=-30")
+                                    onClicked: page.seekRelative(-30)
                                 }
 
                                 IconButton{
                                     id: btnStop
                                     icon.source: "icon-camera-stop.png"
                                     //onClicked: getVLCArt()
-                                    onClicked: sendCommand("pl_stop")
+                                    onClicked: page.sendCommand("pl_stop")
                                 }
 
                                 IconButton{
                                     id: btnFrw
                                     icon.source: "icon-m-next-song.png"
-                                    onClicked: sendCommand("seek&val=%2B30")
+                                    onClicked: page.seekRelative(30)
                                 }
                             }
                         }
@@ -654,11 +691,11 @@ Page {
                         minimumValue: 0
                         maximumValue: 1
                         onClicked: {
-                            sendCommand("seek&val=" + value.toFixed(0))
+                            seekAbsolute(value.toFixed(0))
                             updateSeek(value.toFixed(0))
                         }
                         onMouseXChanged:  {
-                            sendCommand("seek&val=" + value.toFixed(0))
+                            seekAbsolute(value.toFixed(0))
                             updateSeek(value.toFixed(0))
                         }
                     }
@@ -878,6 +915,84 @@ Page {
         anchors.fill: parent
         model: model
         snapMode: ListView.SnapOneItem
+
+    }
+
+    MprisPlayer {
+        id: mprisPlayer
+
+        serviceName: "qtmpris"
+
+        // Mpris2 Root Interface
+        identity: "VLC Remote"
+        supportedUriSchemes: []
+        supportedMimeTypes: []
+
+        // Mpris2 Player Interface
+        canControl: true
+
+        canGoNext: true
+        canGoPrevious: true
+        canPause: iconButtons.playing
+        canPlay: !iconButtons.playing
+        canSeek: true
+        hasTrackList: false
+
+        playbackStatus: iconButtons.playing ? Mpris.Playing : Mpris.Stopped
+        loopStatus: Mpris.None
+        shuffle: false
+        volume: slVol.value / 512.0 * 10
+
+        onVolumeRequested: {
+            console.log("Set volume", volume, "requested");
+            volume /= 10.0;
+            page.setVolume((volume * 512.0).toFixed(0));
+            slVol.value = volume * 512.0;
+        }
+
+        onPauseRequested: {
+            page.pause();
+        }
+
+        onPlayRequested: {
+            console.log("Play requested")
+            page.play();
+        }
+        onPlayPauseRequested: {
+            console.log("Play pause requested")
+            if (iconButtons.playing) {
+                page.pause();
+            } else {
+                page.play();
+            }
+        }
+        onStopRequested: {
+            page.stop();
+        }
+        onNextRequested: {
+            page.next();
+        }
+        onPreviousRequested: {
+            page.prev();
+        }
+        onSeekRequested: {
+            page.seekRelative(offset / 1000000.0)
+            emitSeeked()
+        }
+        onSetPositionRequested: {
+            page.seekAbsolute(offset / 1000000.0)
+            emitSeeked()
+        }
+        onOpenUriRequested: lastMessage = "Requested to open uri \"" + url + "\""
+
+        onLoopStatusRequested: {
+            if (loopStatus == Mpris.None) {
+                repeatSwitch.checked = false
+            } else if (loopStatus == Mpris.Playlist) {
+                repeatSwitch.checked = true
+            }
+        }
+        onShuffleRequested: shuffleSwitch.checked = shuffle
 
     }
 }
