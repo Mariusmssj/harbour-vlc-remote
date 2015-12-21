@@ -43,6 +43,14 @@ Page {
         }
     }
 
+    function scaleVolumeToPercent(value) {
+        return (0 + (value-0)*(200-0)/(512-0));
+    }
+
+    function setVolume(volume) {
+        sendCommand("volume&val=" + volume)
+    }
+
     function pause() {
         sendCommand("pl_pause")
         iconButtons.playing = false
@@ -579,8 +587,8 @@ Page {
                             minimumValue: 0
                             maximumValue: 512
                             value: 100
-                            valueText: "Volume: " + (0 + (value-0)*(200-0)/(512-0)).toFixed(0)
-                            onValueChanged: sendCommand("volume&val=" + value.toFixed(0))
+                            valueText: "Volume: " + scaleVolumeToPercent(value).toFixed(0)
+                            onValueChanged: page.setVolume(value.toFixed(0))
                         }
                     }
                     Row{
@@ -933,7 +941,14 @@ Page {
         playbackStatus: iconButtons.playing ? Mpris.Playing : Mpris.Stopped
         loopStatus: Mpris.None
         shuffle: false
-        volume: 1
+        volume: slVol.value / 512.0 * 10
+
+        onVolumeRequested: {
+            console.log("Set volume", volume, "requested");
+            volume /= 10.0;
+            page.setVolume((volume * 512.0).toFixed(0));
+            slVol.value = volume * 512.0;
+        }
 
         onPauseRequested: {
             page.pause();
