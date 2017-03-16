@@ -933,8 +933,8 @@ Page {
 
         canGoNext: true
         canGoPrevious: true
-        canPause: iconButtons.playing
-        canPlay: !iconButtons.playing
+        canPause: true
+        canPlay: true
         canSeek: true
         hasTrackList: false
 
