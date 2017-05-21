@@ -35,48 +35,68 @@ import "../pages"
 CoverBackground {
 
     Image{
-
-        source: "vlc_cover.png"
-        anchors.top: parent.top
-        anchors.topMargin: 20
-        anchors.horizontalCenter: parent.horizontalCenter
-        scale: 1.14
+        source: "vlc_cover.svg"
+        sourceSize.width: parent.width
+//        anchors {
+//            top: parent.top
+//            topMargin: Theme.paddingSmall
+//        }
+        y: coverActionArea.y / 2 - height / 2
     }
 
-    Label {
-        id: lblArtist
-        anchors.top: parent.top
-        anchors.topMargin: Theme.paddingLarge * 7
-        anchors.left: parent.left
-        anchors.leftMargin: 6
-        truncationMode: TruncationMode.Fade
-        color: Theme.highlightColor
-        elide: Text.ElideRight
-        wrapMode: Text.Wrap
-        text: (getSync() !== 0) ? getArtist() : " "
-    }
-    Label {
-        id: lblTitle
-        anchors.top: lblArtist.bottom
-        anchors.left: parent.left
-        anchors.leftMargin: 6
-        anchors.margins: Theme.paddingSmall
-        truncationMode: TruncationMode.Fade
-        color: Theme.highlightColor
-        elide: Text.ElideRight
-        wrapMode: Text.Wrap
-        text: (getSync() !== 0) ? getTitle() : " "
+    Item {
+        height: lblTitle.y + lblTitle.height
+        width: parent.width
+        y: lblSeek.y / 2 - height / 2
+
+        property int lineCount: lblArtist.lineCount + lblTitle.lineCount
+
+        Label {
+            id: lblArtist
+            anchors {
+                top: parent.top
+                left: parent.left
+                leftMargin: Theme.paddingSmall
+                right: parent.right
+                rightMargin: Theme.paddingSmall
+            }
+            horizontalAlignment: Text.AlignHCenter
+            color: Theme.highlightColor
+            wrapMode: Text.Wrap
+            elide: Text.ElideRight
+            maximumLineCount: lblTitle.text === "" ? 6 : 3 - Math.min((lblTitle.lineCount - 3), 0)
+            text: (getSync() !== 0) ? getArtist() : ""
+        }
+
+        Label {
+            id: lblTitle
+            anchors {
+                top: lblArtist.text === "" ? parent.top : lblArtist.bottom
+                topMargin: lblArtist.text === "" ? 0 : Theme.paddingMedium
+                left: parent.left
+                leftMargin: Theme.paddingSmall
+                right: parent.right
+                rightMargin: Theme.paddingSmall
+            }
+            horizontalAlignment: Text.AlignHCenter
+            color: Theme.highlightColor
+            wrapMode: Text.Wrap
+            elide: Text.ElideRight
+            maximumLineCount:lblArtist.text === "" ? 6 : 3 - Math.min((lblArtist.lineCount - 3), 0)
+            text: (getSync() !== 0) ? getTitle() : ""
+        }
     }
 
     Label {
         id: lblSeek
-        anchors.top: lblTitle.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors{
+            bottom: coverActionArea.top
+            horizontalCenter: parent.horizontalCenter
+        }
         truncationMode: TruncationMode.Fade
         color: Theme.highlightColor
-        elide: Text.ElideRight
-        wrapMode: Text.Wrap
-        text: (getSync() !== 0) ? getSeek() : " "
+        scale: lblArtist.width < width ? lblArtist.width / width : 1
+        text: (getSync() !== 0) ? getSeek() : ""
     }
 
     Timer {
