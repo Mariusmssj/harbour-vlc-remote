@@ -34,6 +34,7 @@ import "pages"
 
 ApplicationWindow
 {
+    id:rootWindow
     initialPage: Component { FirstPage { } }
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
 
@@ -81,7 +82,7 @@ ApplicationWindow
     }
     function setArtist(inArtist)
     {
-        artist = inArtist;
+        artist = inArtist !== undefined ? inArtist : "";
     }
 
     function getTitle()

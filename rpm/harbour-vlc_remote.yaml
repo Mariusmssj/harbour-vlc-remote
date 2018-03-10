@@ -17,11 +17,10 @@ PkgConfigBR:
 - Qt5Core
 - Qt5Qml
 - Qt5Quick
-- mpris-qt5
+- Qt5Xml
 Requires:
 - qt5-qtdeclarative-import-xmllistmodel
 - sailfishsilica-qt5 >= 0.10.9
-- mpris-qt5
 Files:
 - /usr/share/icons/hicolor/86x86/apps
 - /usr/share/applications

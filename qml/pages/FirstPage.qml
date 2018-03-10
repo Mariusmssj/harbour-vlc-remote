@@ -32,7 +32,6 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import "db.js" as DB
 import QtQuick.XmlListModel 2.0
-import org.nemomobile.mpris 1.0
 
 Page {
     id: page
@@ -222,8 +221,8 @@ Page {
 
             labelFileName.text = element.filename
             setTitle(element.filename)
-            labelAlbum.text = element.album
-            labelArtist.text = element.artist
+            labelAlbum.text = (element.album !== undefined ?  element.album : "")
+            labelArtist.text = (element.artist !== undefined ? element.artist : "")
             setArtist(element.artist)
 
             delayAudio = element.audiodelay
@@ -915,84 +914,6 @@ Page {
         anchors.fill: parent
         model: model
         snapMode: ListView.SnapOneItem
-
-    }
-
-    MprisPlayer {
-        id: mprisPlayer
-
-        serviceName: "qtmpris"
-
-        // Mpris2 Root Interface
-        identity: "VLC Remote"
-        supportedUriSchemes: []
-        supportedMimeTypes: []
-
-        // Mpris2 Player Interface
-        canControl: true
-
-        canGoNext: true
-        canGoPrevious: true
-        canPause: true
-        canPlay: true
-        canSeek: true
-        hasTrackList: false
-
-        playbackStatus: iconButtons.playing ? Mpris.Playing : Mpris.Stopped
-        loopStatus: Mpris.None
-        shuffle: false
-        volume: slVol.value / 512.0 * 10
-
-        onVolumeRequested: {
-            console.log("Set volume", volume, "requested");
-            volume /= 10.0;
-            page.setVolume((volume * 512.0).toFixed(0));
-            slVol.value = volume * 512.0;
-        }
-
-        onPauseRequested: {
-            page.pause();
-        }
-
-        onPlayRequested: {
-            console.log("Play requested")
-            page.play();
-        }
-        onPlayPauseRequested: {
-            console.log("Play pause requested")
-            if (iconButtons.playing) {
-                page.pause();
-            } else {
-                page.play();
-            }
-        }
-        onStopRequested: {
-            page.stop();
-        }
-        onNextRequested: {
-            page.next();
-        }
-        onPreviousRequested: {
-            page.prev();
-        }
-        onSeekRequested: {
-            page.seekRelative(offset / 1000000.0)
-            emitSeeked()
-        }
-        onSetPositionRequested: {
-            page.seekAbsolute(offset / 1000000.0)
-            emitSeeked()
-        }
-        onOpenUriRequested: lastMessage = "Requested to open uri \"" + url + "\""
-
-        onLoopStatusRequested: {
-            if (loopStatus == Mpris.None) {
-                repeatSwitch.checked = false
-            } else if (loopStatus == Mpris.Playlist) {
-                repeatSwitch.checked = true
-            }
-        }
-        onShuffleRequested: shuffleSwitch.checked = shuffle
 
     }
 }
