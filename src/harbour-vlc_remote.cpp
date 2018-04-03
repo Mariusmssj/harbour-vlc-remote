@@ -28,13 +28,10 @@
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef QT_QML_DEBUG
+
 #include <QtQuick>
-#endif
-
 #include <sailfishapp.h>
-
-
+#include "playlistmodel.h"
 int main(int argc, char *argv[])
 {
     // SailfishApp::main() will display "qml/template.qml", if you need more
@@ -45,7 +42,19 @@ int main(int argc, char *argv[])
     //   - SailfishApp::pathTo(QString) to get a QUrl to a resource file
     //
     // To display the view, call "show()" (will show fullscreen on device).
+    QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
+    QScopedPointer<QQuickView> v(SailfishApp::createView());
 
-    return SailfishApp::main(argc, argv);
+       // If you wish to publish your app on the Jolla harbour, it is recommended
+       // that you prefix your internal namespaces with "harbour.".
+       //
+       // For details see:
+       // https://harbour.jolla.com/faq#1.5.0
+       qmlRegisterType<PlaylistModel>("harbour.vlc_remote", 1, 0, "PlaylistModel");
+       qRegisterMetaType<QSortFilterProxyModel*>("QSortFilterProxyModel*");
+       // Start the application.
+       v->setSource(SailfishApp::pathTo("qml/harbour-vlc_remote.qml"));
+       v->show();
+       return app->exec();
 }
 

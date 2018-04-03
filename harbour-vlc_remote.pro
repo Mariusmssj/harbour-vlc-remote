@@ -10,8 +10,10 @@ TARGET = harbour-vlc_remote
 
 CONFIG += sailfishapp
 
-SOURCES += src/harbour-vlc_remote.cpp
-
+SOURCES += src/harbour-vlc_remote.cpp \
+    src/playlistmodel.cpp \
+    src/handler.cpp
+QT+=xml
 OTHER_FILES += qml/harbour-vlc_remote.qml \
     qml/cover/CoverPage.qml \
     qml/pages/FirstPage.qml \
@@ -26,4 +28,9 @@ OTHER_FILES += qml/harbour-vlc_remote.qml \
     qml/pages/VlcPlaylist.qml \
     qml/pages/db2.js \
     qml/pages/AboutPage.qml
+
+HEADERS += \
+    src/playlistmodel.h \
+    src/xmlitem.h \
+    src/handler.h
 
